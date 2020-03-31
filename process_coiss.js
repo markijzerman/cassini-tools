@@ -17,13 +17,14 @@ var walker;
 var output_data = '';
 
 // choose the fields the metadata that you want to include form the list at the bottom of this file. These are from the .LBL text files...
-var fields_to_process = ['FILTER_NAME', '^IMAGE_HEADER', 'TARGET_DESC', 'SEQUENCE_ID', 'SEQUENCE_NUMBER', 'START_TIME'];
+// var fields_to_process = ['FILTER_NAME', '^IMAGE_HEADER', 'TARGET_DESC', 'SEQUENCE_ID', 'SEQUENCE_NUMBER', 'START_TIME'];
+var fields_to_process = ['^IMAGE_HEADER', 'TARGET_DESC', 'SEQUENCE_ID', 'SEQUENCE_NUMBER', 'START_TIME'];
 
 // this is where your "coiss_XXXX"  filesare stored...
-var data_directory = '/your_data_directory_here/';
+var data_directory = '../../';
 
 // call the function, and pass a "coiss" directory you want to process...
-process_directory('coiss_2001');
+process_directory('LBLIMG');
 
 // or put in a loop. This will process coiss_2001 - 2093
 
@@ -50,9 +51,10 @@ function process_directory(theDir) {
 
 function readLines(input, the_file, parent_dir, full_path) { //var this_data = {};
     // var this_data = {};
+    // this_data prints stuff
     var this_data = '';
-  //  this_data += parent_dir+ ";";
-    this_data += parent_dir+ ";";
+  //  turn directory printing on/off
+   // this_data += parent_dir+ ", ";
     var remaining = '';
     var line_number = 0;
     input.on('data', function(data) {
@@ -74,19 +76,21 @@ function readLines(input, the_file, parent_dir, full_path) { //var this_data = {
 
                 if (the_key == '^IMAGE_HEADER') { // grab the image id form the file...Format: N1455008708_1.IMG
                     var this_image_id = the_val.split('"')[1].split(".")[0];
-                    this_data += the_val.split('"')[1].split(".")[0] + ";";
+                    this_data += the_val.split('"')[1].split(".")[0] + ", ";
                
                 } else if (the_key == 'START_TIME') {    //  This is UTC time on the spacecraft when the image was taken...Format: 2010-083T06:53:52.745
                     var date_string = pre_clean.replace("\r", "");
                     var this_year = date_string.split('-')[0];
                     var this_day_of_year = date_string.split('-')[1].split("T")[0];
+                    var this_timestamp = date_string.split('T')[1];
 
                     // let's make this time a little easier to use...
-                    var timestamp_nice = moment().dayOfYear(this_day_of_year).format("MMMM D, "+this_year); 
-                    var timestamp_db = this_year+"-"+moment().dayOfYear(this_day_of_year).format("MM")+"-"+moment().dayOfYear(this_day_of_year).format("DD"); 
-                    this_data +=  date_string+";"+timestamp_nice+";"+timestamp_db+ ";";
+                    //var timestamp_nice = moment().dayOfYear(this_day_of_year).format("MMMM D, "+this_year); 
+                    var timestamp_db = this_year+", "+moment().dayOfYear(this_day_of_year).format("MM")+", "+moment().dayOfYear(this_day_of_year).format("DD"); 
+                    this_data +=  timestamp_db+ ", ";
+                    this_data += moment(this_timestamp, "HH:mm:ss").format("HH, mm, ss") + ", ";
                 } else {
-                    this_data += pre_clean.replace("\r", "")+ ";";
+                    this_data += pre_clean.replace("\r", "")+ ", ";
                 }
             }
             remaining = remaining.substring(index + 1);
